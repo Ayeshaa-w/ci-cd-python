@@ -1,11 +1,18 @@
 # ⚙️ AutoShip — CI/CD Pipeline with Automated Testing & Containerisation
 
-![CI](https://github.com/Ayeshaa-w/ci-cd-python/actions/workflows/ci.yml/badge.svg)
+<div align="center">
+
+[![CI](https://github.com/Ayeshaa-w/ci-cd-python/actions/workflows/ci.yml/badge.svg?style=for-the-badge)](https://github.com/Ayeshaa-w/ci-cd-python/actions)
+
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0-black?logo=flask&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Containerised-2496ED?logo=docker&logoColor=white)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-Manifest-326CE5?logo=kubernetes&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-Automated-2088FF?logo=github-actions&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-ubuntu--latest-E95420?logo=ubuntu&logoColor=white)
+![Pytest](https://img.shields.io/badge/Pytest-6%20Tests-green?logo=pytest&logoColor=white)
+
+</div>
 
 > A production-style DevOps pipeline built around a containerised Flask REST API.
 > The focus isn't the app — it's the **engineering system** around it.
