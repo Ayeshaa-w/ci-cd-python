@@ -4,7 +4,6 @@
 
 [![CI](https://github.com/Ayeshaa-w/ci-cd-python/actions/workflows/ci.yml/badge.svg?style=for-the-badge)](https://github.com/Ayeshaa-w/ci-cd-python/actions)
 
-
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0-black?logo=flask&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Containerised-2496ED?logo=docker&logoColor=white)
@@ -12,6 +11,7 @@
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-Automated-2088FF?logo=github-actions&logoColor=white)
 ![Linux](https://img.shields.io/badge/Linux-ubuntu--latest-E95420?logo=ubuntu&logoColor=white)
 ![Pytest](https://img.shields.io/badge/Pytest-6%20Tests-green?logo=pytest&logoColor=white)
+![Secrets](https://img.shields.io/badge/Secrets-GitHub_Vault-red?logo=github&logoColor=white)
 
 </div>
 
@@ -20,15 +20,18 @@
 
 ---
 
-## 🏭 The Factory Analogy
+## 🛠️ Tech Stack
 
-| Layer | What It Is |
-|-------|-----------|
-| 🧸 Flask API | The product being built |
-| 🧪 Pytest | Quality control — tests every component |
-| 🐳 Docker | The packaging line — same output everywhere |
-| ⚡ GitHub Actions | The automated assembly line |
-| ☸️ Kubernetes | The deployment manager — scales and self-heals |
+| Tool | Purpose |
+|------|---------|
+| Python 3.11 | Core language |
+| Flask | REST API framework |
+| Pytest | Automated testing (6 tests) |
+| Docker | Containerisation |
+| GitHub Actions | CI/CD pipeline |
+| Kubernetes | Container orchestration (2 replicas) |
+| GitHub Secrets | Encrypted secrets management |
+| Linux (ubuntu-latest) | Pipeline runtime |
 
 ---
 
@@ -47,8 +50,10 @@ git push → GitHub Actions triggers
     │  any test fails?    │
     └─────────────────────┘
          ↓ YES              ↓ NO
-      ❌ STOP          docker build
-   never deploys        image ready
+      ❌ STOP          Secrets injected
+   never deploys       from GitHub Vault
+                            ↓
+                       docker build
                             ↓
                      ✅ Pipeline green
 ```
@@ -99,6 +104,52 @@ pytest test_app.py -v
 
 ---
 
+## 🔐 Secrets Management
+
+**The problem with hardcoding credentials:**
+```python
+# ❌ NEVER do this — anyone who sees your code sees your secrets
+API_KEY = "my-secret-key-123"
+DB_PASSWORD = "password123"
+```
+
+Leaked API keys can cost thousands in cloud bills or expose user data.
+
+**How AutoShip handles it:**
+```python
+# ✅ Read from environment — secret never in code
+import os
+API_KEY = os.environ.get('API_KEY')
+```
+
+Secrets are stored **encrypted** in GitHub's vault:
+
+```
+GitHub repo Settings
+    → Secrets and variables
+        → Actions
+            → API_KEY  (encrypted, never visible after saving)
+```
+
+During the pipeline, GitHub injects the secret as an environment variable:
+
+```yaml
+- name: Build Docker image
+  run: docker build -t flask-api .
+  env:
+    API_KEY: ${{ secrets.API_KEY }}  ← injected at runtime, never logged
+```
+
+**What this means:**
+- Secret never appears in code ✅
+- Secret never appears in git history ✅
+- Secret never appears in pipeline logs ✅
+- Only the runner gets it, only at runtime ✅
+
+This is production-standard secrets management used at every major tech company.
+
+---
+
 ## 🐳 Run With Docker
 
 ```bash
@@ -126,35 +177,20 @@ kubectl apply -f k8s/deployment.yaml
 If one container crashes → Kubernetes auto-restarts it. Zero downtime.
 
 ---
-
-## 🛠️ Tech Stack
-
-| Tool | Purpose |
-|------|---------|
-| Python 3.11 | Core language |
-| Flask | REST API framework |
-| Pytest | Automated testing |
-| Docker | Containerisation |
-| GitHub Actions | CI/CD pipeline |
-| Kubernetes | Container orchestration |
-| Linux (ubuntu-latest) | Pipeline runtime |
-
----
-
 ## 📁 Project Structure
 
 ```
 autoship/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml          # Pipeline definition
+│       └── ci.yml          # Pipeline definition + secrets injection
 ├── k8s/
-│   └── deployment.yaml     # Kubernetes manifests
-├── app.py                  # Flask REST API
-├── test_app.py             # Pytest test suite
+│   └── deployment.yaml     # Kubernetes manifests (2 replicas)
+├── app.py                  # Flask REST API (CRUD + logging + validation)
+├── test_app.py             # Pytest test suite (6 tests)
 ├── Dockerfile              # Container definition
 ├── requirements.txt        # Python dependencies
-├── .gitignore              # Git exclusions
+├── .gitignore              # Git exclusions (no secrets, no pycache)
 └── README.md               # You are here
 ```
 
@@ -163,16 +199,42 @@ autoship/
 ## 🧠 Key Engineering Decisions
 
 **Why stateless design?**
-Every request carries all needed data. No session state stored server-side. This means any container can handle any request — essential for horizontal scaling.
+Every request carries all needed data. No session state stored server-side. Any container can handle any request — essential for horizontal scaling.
 
 **Why fail-fast pipeline?**
-Bad code is caught at the test stage. Docker never builds broken code. Servers never receive broken deployments. Problems surface immediately at the source.
+Bad code is caught at the test stage. Docker never builds broken code. Problems surface immediately at the source, not in production.
 
 **Why 2 Kubernetes replicas?**
 High availability. If one container crashes, the other keeps serving users while Kubernetes restarts the crashed one. Zero downtime.
 
 **Why structured logging?**
-Every request logged with timestamp and severity level. In production this feeds into monitoring tools (Grafana, CloudWatch) for observability.
+Every request logged with timestamp and severity level. In production this feeds into monitoring tools (Grafana, CloudWatch) for full observability.
+
+**Why GitHub Secrets over .env files?**
+`.env` files can accidentally get committed. GitHub Secrets are encrypted at rest, injected only at runtime, and never visible in logs or history — even to repo owners.
+
+---
+
+## 🔧 Local Setup
+
+```bash
+# Clone the repo
+git clone https://github.com/Ayeshaa-w/ci-cd-python.git
+cd ci-cd-python
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the app
+python app.py
+
+# Run tests
+pytest test_app.py -v
+
+# Run with Docker
+docker build -t autoship .
+docker run -p 5000:5000 autoship
+```
 
 ---
 
@@ -184,4 +246,5 @@ Every request logged with timestamp and severity level. In production this feeds
 
 ---
 
-*Built as part of a backend + cloud engineering learning path. Every failure in the Actions tab is a debugging story.*
+*Built as part of a backend + cloud engineering learning path.*
+*Every red ❌ in the Actions tab is a debugging story. Every green ✅ is a win.*
