@@ -14,6 +14,10 @@
 ![Secrets](https://img.shields.io/badge/Secrets-GitHub_Vault-red?logo=github&logoColor=white)
 
 </div>
+<div align="center">
+  
+  **[🔗Read blog on Hashnode](https://ayeshaa.hashnode.dev/i-built-a-ci-cd-pipeline-from-scratch-as-a-beginner-here-s-every-error-i-hit-and-how-i-fixed-them)**
+</div>
 
 > A production-style DevOps pipeline built around a containerised Flask REST API.
 > The focus isn't the app — it's the **engineering system** around it.
